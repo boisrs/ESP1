@@ -159,7 +159,7 @@ class _ShowListDataPageState extends State<ShowListDataPage> {
   }
 
   Future<void> fetchOne(String bid) async {
-    final String urlone = "http://localhost:8000/book/$bid";
+    final String urlone = "http://172.20.10.4:8000/book/$bid";
     final respons = await http.get(Uri.parse(urlone));
     if (respons.statusCode == 200) {
       setState(() {

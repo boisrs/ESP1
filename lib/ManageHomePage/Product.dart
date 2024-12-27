@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
-
-class SupplierPage extends StatefulWidget {
-  const SupplierPage({super.key});
+class Product extends StatefulWidget {
+  const Product({super.key});
 
   @override
-  State<SupplierPage> createState() => _SupplierPageState();
+  State<Product> createState() => _ProductState();
 }
 
-class _SupplierPageState extends State<SupplierPage> {
-  String supid="";
+class _ProductState extends State<Product> {
+   String proid="";
 
 
   var f = NumberFormat("#,##0.00");
@@ -21,49 +19,58 @@ class _SupplierPageState extends State<SupplierPage> {
   TextEditingController txtsearch = TextEditingController();
 
 
+  TextEditingController txtproID = TextEditingController();
+  TextEditingController txtproname = TextEditingController();
+  TextEditingController txtqty = TextEditingController();
+  TextEditingController txtimprice = TextEditingController();
+  TextEditingController txtsaleprice = TextEditingController();
   TextEditingController txtsupid = TextEditingController();
-  TextEditingController txtsupname = TextEditingController();
-  TextEditingController txttel = TextEditingController();
-  TextEditingController txtemail = TextEditingController();
-  TextEditingController txtcontract = TextEditingController();
-  TextEditingController txttelcontract = TextEditingController();
+  TextEditingController txtlevel = TextEditingController();
+  TextEditingController txtuid = TextEditingController();
+  TextEditingController txtcatid = TextEditingController();
 
   List data = [];
   final String url =
-      "http://172.20.10.4:8000/tbsupplier";
+      "http://172.20.10.4:8000/tbproducts";
   void initState() {
     fetchAllData();
     fetchOne("");
     txtsearch.text = "";
+    txtproname.text = "";
+    txtqty.text = "";
+    txtimprice.text = "";
+    txtsaleprice.text = "";
     txtsupid.text = "";
-    txtsupname.text = "";
-    txttel.text = "";
-    txtemail.text = "";
-    txtcontract.text = "";
-    txttelcontract.text = "";
-    fetchCategory(); 
+    txtlevel.text = "";
+    txtuid.text = "";
+    txtcatid.text = "";
+    txtproID.text = "";
+
+    fetchtbproducts(); 
     super.initState();
   }
 
   @override
   void dispose() {
-    
     txtsearch.dispose();
+    txtproname.dispose();
+    txtqty.dispose();
+    txtimprice.dispose();
+    txtsaleprice.dispose();
     txtsupid.dispose();
-    txtsupname.dispose();
-    txttel.dispose();
-    txtemail.dispose();
-    txtcontract.dispose();
-    txttelcontract.dispose();
+    txtlevel.dispose();
+    txtuid.dispose();
+    txtcatid.dispose();
+    txtproID.dispose();
 
     super.dispose();
   }
   List datacatch=[];
 
-  Future<void> fetchCategory() async{
+  Future<void> fetchtbproducts() async{
     try{
-      final String urlcatrgory="http://172.20.10.4:8000/tbsupplier";
-      final respond = await http.get(Uri.parse(urlcatrgory));
+      final String urltbproducts="http://172.20.10.4:8000/tbproducts";
+      final respond = await http.get(Uri.parse(urltbproducts));
 
       if(respond.statusCode==200){
         datacatch.clear();
@@ -77,9 +84,9 @@ class _SupplierPageState extends State<SupplierPage> {
       print(e);
     }
   }
-  Future<void> DeleteData(String supid) async {
+  Future<void> DeleteData(String proID,) async {
     try {
-      final String urldelete = "http://172.20.10.4:8000/tbsupplier/$supid";
+      final String urldelete = "http://172.20.10.4:8000/tbproducts/$proID";
       final respon = await http.delete(Uri.parse(urldelete));
       if (respon.statusCode == 200) {
         print("ລຶບຂໍ້ມູນແລ້ວ ${respon.body}");
@@ -90,15 +97,22 @@ class _SupplierPageState extends State<SupplierPage> {
     } catch (e) {}
   }
 
-  Future<void> EditcatData(String supid, String supname) async {
+  Future<void> EditcatData(String proID, String proname,String qty, String imprice,String saleprice, String supid, String level,String uid,String catid) async {
     try {
-      final String urledit = "http://172.20.10.4:8000/tbsupplier/$supid";
+      final String urledit = "http://172.20.10.4:8000/tbproducts/$proID";
       final respon = await http.put(Uri.parse(urledit),
           headers: {"content-type": "application/json"},
           body: json.encode({
-            
-            "supname": supname,
-          }));
+          "proID": proID,
+          "proname": proname,
+          "qty": qty.toString(), // Ensure qty is a string
+          "imprice": imprice.toString(), // Ensure imprice is a string
+          "saleprice": saleprice.toString(), // Ensure saleprice is a string
+          "supid": supid.toString(), // Ensure supid is a string
+          "level": level,
+          "uid": uid.toString(), // Ensure uid is a string
+          "catid": catid.toString() // Ensure catid is a string
+        }));
 
       if (respon.statusCode == 200) {
         print("ແກ້ໄຂຂໍ້ມູນແລ້ວ ${respon.body}");
@@ -107,58 +121,45 @@ class _SupplierPageState extends State<SupplierPage> {
       }
 
       fetchAllData();
-      supid="";
+      proID="";
     } catch (e) {
       print(e);
     }
   }
 
- Future<void> AddcatData(String supid, String supname, String tel, String email, String contract, String telcontract) async {
-  try {
-    final String urladd = "http://172.20.10.4:8000/tbsupplier";
-    final respon = await http.post(
-      Uri.parse(urladd),
-      headers: {"content-type": "application/json"},
-      body: json.encode({
-        "supid": supid.toString(),
-        "supname": supname,
-        "tel": tel.toString(),
-        "email": email,
-        "contract": contract,
-        "telcontract": telcontract.toString(),  
-      }),
-    );
-    setState(() {
-      if (respon.statusCode == 200) {
+  Future<void> AddcatData(
+      String proID, String proname, String qty, String imprice,String saleprice, String supid, String level,String uid,String catid) async {
+     try {
+    final String urledit = "http://172.20.10.4:8000/tbproducts/$proID";
+    final respon = await http.put(Uri.parse(urledit),
+        headers: {"content-type": "application/json"},
+        body: json.encode({
+          "proname": proname,
+          "qty": qty.toString(), // Ensure qty is a string
+          "imprice": imprice.toString(), // Ensure imprice is a string
+          "saleprice": saleprice.toString(), // Ensure saleprice is a string
+          "supid": supid.toString(), // Ensure supid is a string
+          "level": level,
+          "uid": uid.toString(), // Ensure uid is a string
+          "catid": catid.toString() // Ensure catid is a string
+        }));
+
+      setState(() {
+        if (respon.statusCode == 200) {
         print("ບັນທຶກຂໍ້ມູນແລ້ວ ${respon.body}");
-        supid = "";
-      } else if (respon.statusCode == 400) {
-        print("ມີຂໍ້ມູນຫົວຫນ່ວຍນີ້ແລ້ວ Error ${respon.statusCode}");
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("ແຈ້ງເຕືອນ"),
-              content: Text("ມີຂໍ້ມູນຫົວຫນ່ວຍນີ້ແລ້ວ!"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                  Navigator.of(context).pop();
-                  },
-                  child: Text("ຕົກລົງ"),
-                ),
-              ],
-            );
-          },
-        );
+        proID="";
+      } else {
+        print("ເກີດຂໍ້ຜິດພາດ ${respon.statusCode}");
       }
       fetchAllData();
-    });
-  } catch (e) {
-    print(e);
-  }
-}
+      
+      });
 
+      
+    } catch (e) {
+      print(e);
+    }
+  }
 
   Future<void> fetchAllData() async {
     final respons = await http.get(Uri.parse(url));
@@ -171,12 +172,19 @@ class _SupplierPageState extends State<SupplierPage> {
   }
 
   void ClearText() {
+    txtproID.text = "";
+    txtproname.text = "";
+    txtqty.text = "";
+    txtimprice.text = "";
+    txtsaleprice.text = "";
     txtsupid.text = "";
-    txtsupname.text = "";
+    txtlevel.text = "";
+    txtuid.text = "";
+    txtcatid.text = "";
   }
 
-  Future<void> fetchOne(String supid) async {
-    final String urlone = "http://172.20.10.4:8000/tbsupplier/$supid";
+  Future<void> fetchOne(String proID) async {
+    final String urlone = "http://172.20.10.4:8000/tbproducts/$proID";
     final respons = await http.get(Uri.parse(urlone));
     if (respons.statusCode == 200) {
       setState(() {
@@ -185,16 +193,16 @@ class _SupplierPageState extends State<SupplierPage> {
     }
     print(data);
   }
-  Widget TextCategory() {
+  Widget Texttbproducts() {
     return Column(
       children: [
         TextField(
-          controller: txtsupid,
+          controller: txtproID,
           decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              label: Text('ລະຫັດຜູ້ສະຫນອງ'),
+              label: Text('ລະຫັດສິນຄ້າ'),
               prefixIcon: Icon(
                 Icons.book_rounded,
                 color: Colors.blue,
@@ -204,15 +212,15 @@ class _SupplierPageState extends State<SupplierPage> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 4,
+          height: 5,
         ),
         TextField(
-          controller: txtsupname,
+          controller: txtproname,
           decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              label: Text('ຊື່ຜູ້ສະຫນອງ'),
+              label: Text('ລາຍການສິນຄ້າ'),
               prefixIcon: Icon(
                 Icons.book,
                 color: Colors.blue,
@@ -222,17 +230,17 @@ class _SupplierPageState extends State<SupplierPage> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 4,
+          height: 5,
         ),
-         TextField(
-          controller: txttel,
+        TextField(
+          controller: txtqty,
           decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              label: Text('ເບີໂທຜູ້ສະຫນອງ'),
+              label: Text('ປະລິມານສິນຄ້າ'),
               prefixIcon: Icon(
-                Icons.book_rounded,
+                Icons.book,
                 color: Colors.blue,
                 size: 25,
               ),
@@ -240,17 +248,17 @@ class _SupplierPageState extends State<SupplierPage> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 4,
+          height: 5,
         ),
-         TextField(
-          controller: txtemail,
+        TextField(
+          controller: txtimprice,
           decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              label: Text('ອີເມວຜູ້ສະຫນອງ'),
+              label: Text('ເງິນເຂົ້າ'),
               prefixIcon: Icon(
-                Icons.book_rounded,
+                Icons.book,
                 color: Colors.blue,
                 size: 25,
               ),
@@ -258,17 +266,17 @@ class _SupplierPageState extends State<SupplierPage> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 4,
+          height: 5,
         ),
-         TextField(
-          controller: txtcontract,
+        TextField(
+          controller: txtsaleprice,
           decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              label: Text('ຕິດຕໍ່ຜູ້ສະຫນອງ'),
+              label: Text('ລາຄາຂາຍ'),
               prefixIcon: Icon(
-                Icons.book_rounded,
+                Icons.book,
                 color: Colors.blue,
                 size: 25,
               ),
@@ -276,17 +284,17 @@ class _SupplierPageState extends State<SupplierPage> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 4,
+          height: 5,
         ),
-         TextField(
-          controller: txttelcontract,
+        TextField(
+          controller: txtsupid,
           decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              label: Text('ເບີໂທຜູ້ຕິດຕໍ່ຜູ້ສະຫນອງ'),
+              label: Text('ລະຫັດຜູ້ສະໜອງ'),
               prefixIcon: Icon(
-                Icons.book_rounded,
+                Icons.book,
                 color: Colors.blue,
                 size: 25,
               ),
@@ -294,58 +302,104 @@ class _SupplierPageState extends State<SupplierPage> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 4,
+          height: 5,
         ),
-        
+        TextField(
+          controller: txtlevel,
+          decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              label: Text('ເລເວວ'),
+              prefixIcon: Icon(
+                Icons.book,
+                color: Colors.blue,
+                size: 25,
+              ),
+              filled: true,
+              fillColor: Colors.white),
+        ),
+        SizedBox(
+          height: 5,
+        ),
+        TextField(
+          controller: txtuid,
+          decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              label: Text('ລະຫັດຫົວໜ່ວຍ'),
+              prefixIcon: Icon(
+                Icons.book,
+                color: Colors.blue,
+                size: 25,
+              ),
+              filled: true,
+              fillColor: Colors.white),
+        ),
+        SizedBox(
+          height: 5,
+        ),TextField(
+          controller: txtcatid,
+          decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              label: Text('ລະຫັດປະເພດສິນຄ້າ'),
+              prefixIcon: Icon(
+                Icons.book,
+                color: Colors.blue,
+                size: 25,
+              ),
+              filled: true,
+              fillColor: Colors.white),
+        ),
+   
   
         SizedBox(
-          height: 4,
+          height: 5,
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 150,
+              width: 110,
               height: 50,
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromARGB(255, 148, 226, 133),
-                      elevation: 15,
+                      elevation: 12,
                       shadowColor: Color.fromARGB(255, 61, 104, 56)),
                   onPressed: () {
-                    if(supid !=""){
-                      EditcatData(txtsupid.text, txtsupname.text);
+                    if(proid !=""){
+                      EditcatData(txtproID.text, txtproname.text,txtqty.text,txtimprice.text,txtsaleprice.text,txtlevel.text,txtsupid.text,txtuid.text,txtcatid.text);
                       ClearText();
                       
                     } else
-                      AddcatData(txtsupid.text, txtsupname.text,txttel.text,txtemail.text,txtcontract.text,txttelcontract.text);
+                      AddcatData(txtproID.text, txtproname.text,txtqty.text,txtimprice.text,txtsaleprice.text,txtlevel.text,txtsupid.text,txtuid.text,txtcatid.text);
                       ClearText();
-                      Navigator.of(context).pop();
-                    
-                    
+                      Navigator.of(context).pop();  
                   },
                   child: Text(
-                    'ບັນທຶກຂໍ້ມູນ',
+                    'ບັນທຶກ',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 19,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold),
                   )),
             ),
             SizedBox(
-              width: 10,
+              width: 5,
             ),
             SizedBox(
-              width: 150,
+              width: 110,
               height: 50,
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromARGB(255, 223, 82, 82),
                       elevation: 15,
                       shadowColor: Color.fromARGB(255, 104, 56, 56)),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: () {},
                   child: Text(
                     'ຍົກເລີກ',
                     style: TextStyle(
@@ -360,25 +414,40 @@ class _SupplierPageState extends State<SupplierPage> {
     );
   }
 
-  void Addcategory() {
-    showDialog(
-        context: context,
-        builder: (c) {
-          return AlertDialog(
-            backgroundColor: Colors.amber,
-            title: Text('ເພິ່ມຂໍ້ມູນ'),
-            content: Text("ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ"),
-            actions: [
-              TextCategory(),
-            ],
-          );
-        });
-  }
+
+  void Addtbproducts() {
+  showDialog(
+    context: context,
+    builder: (c) {
+      return AlertDialog(
+        backgroundColor: Colors.amber,
+        title: Text('ເພິ່ມຂໍ້ມູນ'),
+        content: SizedBox(
+          // width: MediaQuery.of(context).size.width * 1.0, // 100% ของหน้าจอ
+          // height: MediaQuery.of(context).size.height * 0.7, // 70% ของหน้าจอ
+          child: SingleChildScrollView( // เพิ่ม Scroll ในกรณีเนื้อหายาว
+            child: Texttbproducts(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('ຍົກເລີກ'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ຈັດການຂໍ້ມູນຜູ້ສະຫນອງ"),
+        title: Text("ຈັດການຂໍ້ມູນສິນຄ້າ"),
         bottom: PreferredSize(
             preferredSize: Size.fromHeight(60),
             child: Container(
@@ -444,14 +513,21 @@ class _SupplierPageState extends State<SupplierPage> {
                   children: [
                     ListTile(
                       leading: Text(
-                        getdata['supid'].toString(),
+                        getdata['proID'].toString(),
                         style: TextStyle(
                             color: Colors.black,
                             fontSize: 22,
                             fontWeight: FontWeight.bold),
                       ),
                       title: Text(
-                        getdata['supname'],
+                        getdata['proname'],
+                        style: TextStyle(
+                            color: Colors.blue.shade300,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        getdata['qty'].toString(),
                         style: TextStyle(
                             color: Colors.blue.shade300,
                             fontSize: 20,
@@ -462,11 +538,18 @@ class _SupplierPageState extends State<SupplierPage> {
                         children: [
                           IconButton(
                               onPressed: () {
-                                supid ='${getdata['supid'].toString()}';
+                                proid ='${getdata['proID'].toString()}';
+                                txtproID.text = '${getdata['proID']}';
+                                txtproname.text = '${getdata['proname']}';
+                                txtqty.text = '${getdata['qty']}';
+                                txtimprice.text = '${getdata['imprice']}';
+                                txtsaleprice.text = '${getdata['saleprice']}';
                                 txtsupid.text = '${getdata['supid']}';
-                                txtsupname.text = '${getdata['supname']}';
+                                txtlevel.text = '${getdata['level']}';
+                                txtuid.text = '${getdata['uid']}';
+                                txtcatid.text = '${getdata['catid']}';
                         
-                                Addcategory();
+                                Addtbproducts();
                               },
                               icon: Icon(
                                 Icons.edit,
@@ -482,13 +565,13 @@ class _SupplierPageState extends State<SupplierPage> {
                                     context: context,
                                     builder: (c) {
                                       return AlertDialog(
-                                        title: Text("ລຶບຂໍ້ມູນຜູ້ສະຫນອງ"),
+                                        title: Text("ລຶບຂໍ້ມູນປື້ມ"),
                                         content: Text(
                                             "ທ່ານຕ້ອງການລຶບຂໍ້ມູນນີ້ ຫຼື ບໍ່ [yes/no]"),
                                         actions: [
                                           TextButton(
                                               onPressed: () {
-                                                DeleteData("${getdata['supid']}");
+                                                DeleteData("${getdata['proID']}");
                                                 Navigator.of(context).pop();
                                               },
                                               child: Text('Yes')),
@@ -518,7 +601,7 @@ class _SupplierPageState extends State<SupplierPage> {
         backgroundColor: Colors.green.shade900,
         onPressed: () {
           
-          Addcategory();
+          Addtbproducts();
         },
         child: Icon(
           Icons.add,

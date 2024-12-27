@@ -4,7 +4,7 @@ import 'package:myapp/ManageHomePage/categoryPage.dart';
 import 'package:myapp/ManageHomePage/CurrentExchangePage.dart';
 import 'package:myapp/ManageHomePage/CustomerPage.dart';
 import 'package:myapp/ManageHomePage/EmployeePage.dart';
-import 'package:myapp/ManageHomePage/ProductsPage.dart';
+import 'package:myapp/ManageHomePage/Product.dart';
 import 'package:myapp/ManageHomePage/SupplierPage.dart';
 
 
@@ -27,7 +27,7 @@ List icon=[Icon(Icons.ac_unit, color:Colors.amber,size: iconSize[0],),
 List routPage=[
   const UnitPage(),
   const categoryPage(),
-  const ProductsPage(),
+  const Product(),
   const SupplierPage(),
   const EmployeePage(),
   const CustomerPage(),
