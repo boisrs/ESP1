@@ -13,6 +13,10 @@ class Product extends StatefulWidget {
 class _ProductState extends State<Product> {
    String proid="";
 
+   String? _selectItem;
+   String? _selectItemunit;
+   String? _selectItemcate;
+
 
   var f = NumberFormat("#,##0.00");
 
@@ -31,7 +35,7 @@ class _ProductState extends State<Product> {
 
   List data = [];
   final String url =
-      "http://172.20.10.4:8000/tbproducts";
+      "http://192.168.67.207:8000/tbproducts";
   void initState() {
     fetchAllData();
     fetchOne("");
@@ -46,7 +50,9 @@ class _ProductState extends State<Product> {
     txtcatid.text = "";
     txtproID.text = "";
 
-    fetchtbproducts(); 
+    fetchtbsupplier();
+    fetchtbunit();
+    fetchCategory(); 
     super.initState();
   }
 
@@ -65,28 +71,48 @@ class _ProductState extends State<Product> {
 
     super.dispose();
   }
-  List datacatch=[];
+  List supplierData = [];
+  List unitData = [];
+  List datacatch = [];
+  List productData = [];
 
-  Future<void> fetchtbproducts() async{
+  Future<void> fetchtbsupplier() async{
     try{
-      final String urltbproducts="http://172.20.10.4:8000/tbproducts";
+      final String urltbproducts="http://192.168.67.207:8000/tbsupplier";
       final respond = await http.get(Uri.parse(urltbproducts));
 
       if(respond.statusCode==200){
-        datacatch.clear();
+        supplierData.clear();
         setState(() {
           
-          datacatch = json.decode(respond.body);
+          supplierData = json.decode(respond.body);
         });
       }
-    print(datacatch);
+    print(supplierData);
+    }catch(e){
+      print(e);
+    }
+  }
+  Future<void> fetchtbunit() async{
+    try{
+      final String urltbproducts="http://192.168.67.207:8000/tbunit";
+      final respond = await http.get(Uri.parse(urltbproducts));
+
+      if(respond.statusCode==200){
+        unitData.clear();
+        setState(() {
+          
+          unitData = json.decode(respond.body);
+        });
+      }
+    print(unitData);
     }catch(e){
       print(e);
     }
   }
   Future<void> DeleteData(String proID,) async {
     try {
-      final String urldelete = "http://172.20.10.4:8000/tbproducts/$proID";
+      final String urldelete = "http://192.168.67.207:8000/tbproducts/$proID";
       final respon = await http.delete(Uri.parse(urldelete));
       if (respon.statusCode == 200) {
         print("ລຶບຂໍ້ມູນແລ້ວ ${respon.body}");
@@ -99,25 +125,42 @@ class _ProductState extends State<Product> {
 
   Future<void> EditcatData(String proID, String proname,String qty, String imprice,String saleprice, String supid, String level,String uid,String catid) async {
     try {
-      final String urledit = "http://172.20.10.4:8000/tbproducts/$proID";
+      final String urledit = "http://192.168.67.207:8000/tbproducts/$proID";
       final respon = await http.put(Uri.parse(urledit),
           headers: {"content-type": "application/json"},
           body: json.encode({
           "proID": proID,
           "proname": proname,
-          "qty": qty.toString(), // Ensure qty is a string
-          "imprice": imprice.toString(), // Ensure imprice is a string
-          "saleprice": saleprice.toString(), // Ensure saleprice is a string
-          "supid": supid.toString(), // Ensure supid is a string
+          "qty": qty.toString(), 
+          "imprice": imprice.toString(), 
+          "saleprice": saleprice.toString(), 
+          "supid": supid.toString(), 
           "level": level,
-          "uid": uid.toString(), // Ensure uid is a string
-          "catid": catid.toString() // Ensure catid is a string
+          "uid": uid.toString(), 
+          "catid": catid.toString() 
         }));
 
       if (respon.statusCode == 200) {
         print("ແກ້ໄຂຂໍ້ມູນແລ້ວ ${respon.body}");
-      } else {
-        print("ເກີດຂໍ້ຜິດພາດ ${respon.statusCode}");
+      } else if (respon.statusCode == 400) {
+        print("ມີຂໍ້ມູນຫົວຫນ່ວຍນີ້ແລ້ວ Error ${respon.statusCode}");
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("ແຈ້ງເຕືອນ"),
+              content: Text("ມີຂໍ້ມູນຫົວຫນ່ວຍນີ້ແລ້ວ!"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                  Navigator.of(context).pop();
+                  },
+                  child: Text("ຕົກລົງ"),
+                ),
+              ],
+            );
+          },
+        );
       }
 
       fetchAllData();
@@ -130,30 +173,46 @@ class _ProductState extends State<Product> {
   Future<void> AddcatData(
       String proID, String proname, String qty, String imprice,String saleprice, String supid, String level,String uid,String catid) async {
      try {
-    final String urledit = "http://172.20.10.4:8000/tbproducts/$proID";
-    final respon = await http.put(Uri.parse(urledit),
+      final String urladd = "http://192.168.67.207:8000/tbproducts";
+      final respon = await http.post(Uri.parse(urladd),
         headers: {"content-type": "application/json"},
         body: json.encode({
           "proname": proname,
-          "qty": qty.toString(), // Ensure qty is a string
-          "imprice": imprice.toString(), // Ensure imprice is a string
-          "saleprice": saleprice.toString(), // Ensure saleprice is a string
-          "supid": supid.toString(), // Ensure supid is a string
+          "qty": qty.toString(), 
+          "imprice": imprice.toString(), 
+          "saleprice": saleprice.toString(), 
+          "supid": supid.toString(), 
           "level": level,
-          "uid": uid.toString(), // Ensure uid is a string
-          "catid": catid.toString() // Ensure catid is a string
+          "uid": uid.toString(), 
+          "catid": catid.toString() 
         }));
 
       setState(() {
-        if (respon.statusCode == 200) {
+      if (respon.statusCode == 200) {
         print("ບັນທຶກຂໍ້ມູນແລ້ວ ${respon.body}");
-        proID="";
-      } else {
-        print("ເກີດຂໍ້ຜິດພາດ ${respon.statusCode}");
+        uid = "";
+      } else if (respon.statusCode == 400) {
+        print("ມີຂໍ້ມູນຫົວຫນ່ວຍນີ້ແລ້ວ Error ${respon.statusCode}");
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("ແຈ້ງເຕືອນ"),
+              content: Text("ມີຂໍ້ມູນຫົວຫນ່ວຍນີ້ແລ້ວ!"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                  Navigator.of(context).pop();
+                  },
+                  child: Text("ຕົກລົງ"),
+                ),
+              ],
+            );
+          },
+        );
       }
       fetchAllData();
-      
-      });
+    });
 
       
     } catch (e) {
@@ -177,14 +236,14 @@ class _ProductState extends State<Product> {
     txtqty.text = "";
     txtimprice.text = "";
     txtsaleprice.text = "";
-    txtsupid.text = "";
+    _selectItem = null;
     txtlevel.text = "";
-    txtuid.text = "";
-    txtcatid.text = "";
+    _selectItemunit = null;
+    _selectItemcate = null;
   }
 
   Future<void> fetchOne(String proID) async {
-    final String urlone = "http://172.20.10.4:8000/tbproducts/$proID";
+    final String urlone = "http://192.168.67.207:8000/tbproducts/$proID";
     final respons = await http.get(Uri.parse(urlone));
     if (respons.statusCode == 200) {
       setState(() {
@@ -192,6 +251,124 @@ class _ProductState extends State<Product> {
       });
     }
     print(data);
+  }
+
+
+
+
+  Future<void> fetchCategory() async {
+  try {
+    final String urlcatrgory = "http://192.168.67.207:8000/category";
+    final response = await http.get(Uri.parse(urlcatrgory));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> categoryData = json.decode(response.body);
+      setState(() {
+        datacatch = categoryData;
+      });
+      print(datacatch); // Debug: check the data
+    } else {
+      print("Failed to load categories: ${response.statusCode}");
+    }
+  } catch (e) {
+    print("Error fetching categories: $e");
+  }
+}
+Widget Loadsupplier(setState){
+    return StatefulBuilder(
+      builder: (context,setState) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.white,
+            border: Border.all(color: Colors.black,width: 1)
+          ),
+          child: DropdownButton(
+            isExpanded: true,
+            hint: Text("ກະລຸນາເລືອກຜູ້ສະໜອງ"),
+            value: _selectItem,
+            items: supplierData.map((cat){
+            return DropdownMenuItem(
+              value: cat['supid'].toString(),
+              child: Text('${cat['supname']}'));
+            }).toList(),
+            onChanged: (val){
+              setState(() {
+                _selectItem = val;
+              });
+              this.setState((){
+                _selectItem = val;
+              });
+              print(_selectItem);
+            }),
+        );
+      }
+    );
+  }
+ Widget Loadunit(setState){
+    return StatefulBuilder(
+      builder: (context,setState) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.white,
+            border: Border.all(color: Colors.black,width: 1)
+          ),
+          child: DropdownButton(
+            isExpanded: true,
+            hint: Text("ກະລຸນາເລືອກຫົວໜ່ວຍ"),
+            value: _selectItemunit,
+            items: unitData.map((cat){
+            return DropdownMenuItem(
+              value: cat['uid'].toString(),
+              child: Text('${cat['uname']}'));
+            }).toList(),
+            onChanged: (val){
+              setState(() {
+                _selectItemunit = val;
+              });
+              this.setState((){
+                _selectItemunit = val;
+              });
+              print(_selectItemunit);
+            }),
+        );
+      }
+    );
+  }
+ Widget LoadCategory(setState){
+    return StatefulBuilder(
+      builder: (context,setState) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.white,
+            border: Border.all(color: Colors.black,width: 1)
+          ),
+          child: DropdownButton(
+            isExpanded: true,
+            hint: Text("ກະລຸນາເລືອກປະເພດສິນຄ້າ"),
+            value: _selectItemcate,
+            items: datacatch.map((cat){
+            return DropdownMenuItem(
+              value: cat['catid'].toString(),
+              child: Text('${cat['catname']}'));
+            }).toList(),
+            onChanged: (val){
+              setState(() {
+                _selectItemcate = val;
+              });
+              this.setState((){
+                _selectItemcate = val;
+              });
+              print(_selectItemcate);
+            }),
+        );
+      }
+    );
   }
   Widget Texttbproducts() {
     return Column(
@@ -212,7 +389,7 @@ class _ProductState extends State<Product> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 5,
+          height: 10,
         ),
         TextField(
           controller: txtproname,
@@ -230,7 +407,7 @@ class _ProductState extends State<Product> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 5,
+          height: 10,
         ),
         TextField(
           controller: txtqty,
@@ -248,7 +425,7 @@ class _ProductState extends State<Product> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 5,
+          height: 10,
         ),
         TextField(
           controller: txtimprice,
@@ -266,7 +443,7 @@ class _ProductState extends State<Product> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 5,
+          height: 10,
         ),
         TextField(
           controller: txtsaleprice,
@@ -284,25 +461,11 @@ class _ProductState extends State<Product> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 5,
+          height: 10,
         ),
-        TextField(
-          controller: txtsupid,
-          decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              label: Text('ລະຫັດຜູ້ສະໜອງ'),
-              prefixIcon: Icon(
-                Icons.book,
-                color: Colors.blue,
-                size: 25,
-              ),
-              filled: true,
-              fillColor: Colors.white),
-        ),
+        Loadsupplier(setState),
         SizedBox(
-          height: 5,
+          height: 10,
         ),
         TextField(
           controller: txtlevel,
@@ -320,44 +483,17 @@ class _ProductState extends State<Product> {
               fillColor: Colors.white),
         ),
         SizedBox(
-          height: 5,
+          height: 10,
         ),
-        TextField(
-          controller: txtuid,
-          decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              label: Text('ລະຫັດຫົວໜ່ວຍ'),
-              prefixIcon: Icon(
-                Icons.book,
-                color: Colors.blue,
-                size: 25,
-              ),
-              filled: true,
-              fillColor: Colors.white),
-        ),
+        Loadunit(setState),
         SizedBox(
-          height: 5,
-        ),TextField(
-          controller: txtcatid,
-          decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              label: Text('ລະຫັດປະເພດສິນຄ້າ'),
-              prefixIcon: Icon(
-                Icons.book,
-                color: Colors.blue,
-                size: 25,
-              ),
-              filled: true,
-              fillColor: Colors.white),
+          height: 10,
         ),
+         LoadCategory(setState),
    
   
         SizedBox(
-          height: 5,
+          height: 10,
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -368,28 +504,30 @@ class _ProductState extends State<Product> {
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromARGB(255, 148, 226, 133),
-                      elevation: 12,
+                      elevation: 15,
                       shadowColor: Color.fromARGB(255, 61, 104, 56)),
                   onPressed: () {
                     if(proid !=""){
-                      EditcatData(txtproID.text, txtproname.text,txtqty.text,txtimprice.text,txtsaleprice.text,txtlevel.text,txtsupid.text,txtuid.text,txtcatid.text);
+                      EditcatData(txtproID.text, txtproname.text,txtqty.text,txtimprice.text,txtsaleprice.text,_selectItem.toString(),txtlevel.text,_selectItemunit.toString(),_selectItemcate.toString());
                       ClearText();
                       
                     } else
-                      AddcatData(txtproID.text, txtproname.text,txtqty.text,txtimprice.text,txtsaleprice.text,txtlevel.text,txtsupid.text,txtuid.text,txtcatid.text);
+                      AddcatData(txtproID.text, txtproname.text,txtqty.text,txtimprice.text,txtsaleprice.text,_selectItem.toString(),txtlevel.text,_selectItemunit.toString(),_selectItemcate.toString());
+                      Navigator.of(context).pop();
                       ClearText();
-                      Navigator.of(context).pop();  
+                    
+                    
                   },
                   child: Text(
                     'ບັນທຶກ',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.bold),
                   )),
             ),
             SizedBox(
-              width: 5,
+              width: 10,
             ),
             SizedBox(
               width: 110,
@@ -399,7 +537,10 @@ class _ProductState extends State<Product> {
                       backgroundColor: Color.fromARGB(255, 223, 82, 82),
                       elevation: 15,
                       shadowColor: Color.fromARGB(255, 104, 56, 56)),
-                  onPressed: () {},
+                  onPressed: () {
+                     Navigator.of(context).pop();
+                     ClearText();
+                  },
                   child: Text(
                     'ຍົກເລີກ',
                     style: TextStyle(
@@ -414,7 +555,6 @@ class _ProductState extends State<Product> {
     );
   }
 
-
   void Addtbproducts() {
   showDialog(
     context: context,
@@ -423,9 +563,8 @@ class _ProductState extends State<Product> {
         backgroundColor: Colors.amber,
         title: Text('ເພິ່ມຂໍ້ມູນ'),
         content: SizedBox(
-          // width: MediaQuery.of(context).size.width * 1.0, // 100% ของหน้าจอ
-          // height: MediaQuery.of(context).size.height * 0.7, // 70% ของหน้าจอ
-          child: SingleChildScrollView( // เพิ่ม Scroll ในกรณีเนื้อหายาว
+          
+          child: SingleChildScrollView( 
             child: Texttbproducts(),
           ),
         ),
@@ -441,7 +580,6 @@ class _ProductState extends State<Product> {
     },
   );
 }
-
 
   @override
   Widget build(BuildContext context) {
@@ -544,11 +682,11 @@ class _ProductState extends State<Product> {
                                 txtqty.text = '${getdata['qty']}';
                                 txtimprice.text = '${getdata['imprice']}';
                                 txtsaleprice.text = '${getdata['saleprice']}';
-                                txtsupid.text = '${getdata['supid']}';
+                                _selectItem = '${getdata['supid']}';
                                 txtlevel.text = '${getdata['level']}';
-                                txtuid.text = '${getdata['uid']}';
-                                txtcatid.text = '${getdata['catid']}';
-                        
+                                _selectItemunit = '${getdata['uid']}';
+                                _selectItemcate = '${getdata['catid']}';
+                              
                                 Addtbproducts();
                               },
                               icon: Icon(
@@ -600,7 +738,6 @@ class _ProductState extends State<Product> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green.shade900,
         onPressed: () {
-          
           Addtbproducts();
         },
         child: Icon(
