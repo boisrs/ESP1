@@ -1,41 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/Login/LoginPage.dart';
+import 'package:parking/loginandregis/firstpage.dart';
+
 
 
 void main(){
-  runApp(myapp());
+  runApp(parking());
 }
-class myapp extends StatelessWidget {
-  const myapp({super.key});
+
+class parking extends StatelessWidget {
+  const parking({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         appBarTheme: AppBarTheme(
-          color: Colors.amber[700],
-          titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 22.0,
-            
-          ),
-          iconTheme: IconThemeData(
           color: Colors.white,
-          size: 33.0
+          titleTextStyle: const TextStyle(
+            color: Colors.black,
+            fontSize: 22.0,
+
+          ),
+          iconTheme: const IconThemeData(
+            color: Colors.black,
+            size: 33.0
           )
         ),
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           selectedLabelStyle: TextStyle(fontSize: 25,color: Colors.white),
           unselectedLabelStyle: TextStyle(fontSize: 14,color: Colors.white),
-
         )
-
       ),
 
-
-
-      home: LoginPage(),
+      home: firstpage()
     );
   }
 }
